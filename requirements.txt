@@ -1,0 +1,15 @@
+numpy
+scipy
+gymnasium
+gymnasium[box2d]
+scikit-learn
+torch
+matplotlib==3.7.2
+torchvision==0.16.1
+dm-env==1.6
+imageio==2.33.1 
+transformers==4.36.2
+crafter
+pygame
+sentence-transformers==2.2.2
+wandb==0.16.2

@@ -1,0 +1,102 @@
+exp_name: something_default
+openai_key: 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
+openai_org: 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
+max_seq_tokens: 200 # Max token length of both text obs and goals
+
+# Environment
+# Environment
+env_spec:
+  name: CrafterTextEnv-v1
+  lm_spec:
+    lm_class: SimpleOracle
+    lm: code-davinci-002  # Only used for the GPT lm_classes (GPTLanguageModel, GPTHousekeep)
+    prompt: BulletPrompt  # Format of the prompt
+    max_tokens: 200
+    temperature: .1
+    budget: 1 # In dollars
+    openai_key: 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
+    openai_org: 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
+    all_goals: null # Automatically set to all goals in env for the novel-goals baseline
+    max_num_goals: all # for baseline, suggest all possible goals or choose a number
+    dummy_lm: True  # Use this if you want to test modifications to the LM without using OpenAI credits
+    novelty_bonus: True  # Only reward for each goal once
+  seed: 111
+  action_space_type: harder # set to 'easier' for smaller ac space env
+  env_reward: ???   # to be specified later
+  dying: True  # Can the agent die?
+  length: 400  # Max episode length
+  max_seq_len: 200
+  use_sbert: False  # Tokenize obs and goals with sbert
+  device: "cpu"
+  use_language_state: False  # Agent is given encoded language state
+  threshold: .99  # For open generation, cosine similarity threshold above which a goal is considered achieved
+  check_ac_success: True  # Whether to check if an action is successful before rewarding for it
+eval_video_goals: [] # Which goals to save videos of (slow to generate all)
+
+# task settings
+debug: False
+frame_stack: 4
+discount: 0.99
+# train settings
+num_train_frames: 5000000
+num_seed_frames: 5000
+# eval
+eval_every_frames: 25000
+num_eval_episodes: 10
+single_goal_eval: false
+
+
+# replay buffer
+replay_buffer_size: 2000000
+replay_buffer_num_workers: 4
+clip_reward: true
+nstep: 3
+batch_size: 64
+# misc
+seed: 1
+device: cpu
+save_video: False
+use_tb: false
+use_wandb: false
+# experiment
+experiment: exp
+# agent
+lr: 0.0000625
+use_image: true
+use_language_state: null # None for no language state, 'conv' for conv, 'transformer' for transformer, 'sbert' for sbert transformer
+use_goal: false  # Show goal to agent
+vocab_size: 102  # Only used when NOT using a pretrained encoder
+train_log_every: 5000
+finetune_settings: train_all  # Other options 'linear' or 'critic' (to only finetune those model components)
+expl_agent_path: null  # If provided, uses this pretrained agent to guide exploration
+other_model_prob: .5  # If using a pretrained agent to guide exploration, what fraction of the time to use it (rather than a random action)
+train_after_reward: false  # Only start doing model updates after the agent has received its first positive reward (consider using for very sparse-rew envs)
+decay_after_reward: false  # Only start decaying epsilon after the agent has received its first positive reward (consider using for very sparse-rew envs)
+
+agent:
+  _target_: dqn_ellm.DQNAgent
+  obs_shape: ??? # to be specified later
+  num_actions: ??? # to be specified later
+  device: ${device}
+  lr: ${lr}
+  critic_target_tau: 1.0
+  critic_target_update_every_steps: 8000
+  train_eps_min: 0.01
+  train_eps_max: 1
+  train_eps_decay_steps: 1000000
+  eval_eps: 0.001
+  reward_scale: 1  # Scale reward (only use this if you want to try to balance pretraining and finetuning rewards better)
+  update_every_steps: 4
+  use_tb: ${use_tb}
+  use_wandb: ${use_wandb}
+  hidden_dim: 512
+  use_image: ${use_image}
+  use_language_state: ${use_language_state} # use transformer + language embeddings for states
+  use_goal: ${use_goal}
+  vocab: ${vocab_size}
+  debug: ${debug}
+  goal_encoder_type: sbert # gru or transformer or sbert
+  # use_language: True # Uncomment or +args for RND/NovelD/APT
+  # noveld: False # Uncomment or + args for RND/NovelD
+  finetune_settings: ${finetune_settings}
+  other_model_prob: ${other_model_prob}
